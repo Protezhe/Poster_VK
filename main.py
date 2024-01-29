@@ -480,6 +480,21 @@ def vk_video_upload(file, name_video, text_posta):
 
     vk.wall.post(message=text_posta, attachments=atach)
 
+
+def vk_avatar_upload(file):
+
+    photo_info = upload.photo_profile(file)
+
+    print(photo_info)
+
+
+
+
+vk_avatar_upload('photos/file_10.jpg')
+
+
+
+
 #Отправляет фотку в бот и спрашивает про пост
 def spros_za_fotku() -> object:
     ochered_0 = sprashivaem_za_fotku('photos', '0\n')
@@ -721,10 +736,6 @@ def addfile(message):
 
             bot.send_message('206172159', 'Файл ' + file_name + ' сохранен в корневую папку')
 
-
-
-
-#Темы:
 
 #расписание в конфиге
 def post_vk_count():
