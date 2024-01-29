@@ -8,7 +8,6 @@ import time
 import threading
 import vk_api
 
-
 # Общие функции
 def poisk_posta_tg(folder, file_id):
 
@@ -89,6 +88,8 @@ token_tg = chtenie_stroki('tokens.txt', 1)
 token_tg = token_tg.split('\n')[0]
 
 bot = telebot.TeleBot(token_tg)
+
+bot.send_message('206172159', 'Бот запущен')
 
 
 #Специаьные функции
@@ -255,7 +256,27 @@ def vk_upload_post_with_photo(folder, item, name_of_file, text_posta):
         bot.send_message('206172159', 'Пост с фото не был опубликован вк: ' + text_posta)
 
 
-def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi):
+def vk_upload_ava(folder, item, name_of_file):
+
+    vk_start = chtenie_stroki('config.txt', 2)
+
+    if vk_start == 'vk_start\n':
+
+        zapis_v_fail(name_of_file, 1, '3')
+
+        photo_file = folder + '/' + item
+
+        vk_avatar_upload(photo_file)
+
+        bot.send_message('206172159', 'Аватар был обновлен')
+
+
+    elif vk_start =='vk_stop\n':
+
+        bot.send_message('206172159', 'Аватар не был обновлен')
+
+
+def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi, tag):
 
     files = os.listdir(folder)
 
@@ -312,15 +333,30 @@ def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi):
 
                         season_copability = False
 
+                if text_posta.find('#') != -1:
+
+                    post_tag = text_posta.split('#')[1]
+
+                    text_posta = text_posta.split('#') [0]
 
 
-                if text_full_posta != "\n" and nomer_ocheredi == poisk_nomer_ocheredi and season_copability == True:
+
+                    post_tag = post_tag.rstrip()
+
+                    if post_tag == tag:
+
+                        vk_upload_ava(folder, item, name_of_file)
+
+
+                if text_full_posta != "\n" and nomer_ocheredi == poisk_nomer_ocheredi and tag != 'ava' and season_copability == True:
+
+                    print(text_posta)
 
                     ochered = True
 
                     vk_upload_post_with_photo(folder, item, name_of_file, text_posta)
 
-                    print(text_posta)
+
 
                     break
 
@@ -461,6 +497,7 @@ def vk_photo_upload(file, text_posta):
 
     vk.wall.post(message=text_posta, attachments=atach)
 
+
 def vk_video_upload(file, name_video, text_posta):
 
     video_info = upload.video(file, name=name_video)
@@ -488,11 +525,8 @@ def vk_avatar_upload(file):
     print(photo_info)
 
 
-
-
-vk_avatar_upload('photos/file_10.jpg')
-
-
+#https://oauth.vk.com/authorize?client_id=51844510&redirect_uri=https://api.vk.com/blank.html&scope=offline,wall&response_type=token
+#https://api.vk.com/blank.html#access_token=vk1.a.WsVxuK1mCPt0e9ckGuyCJTDAxTZWxv1Y3Xk7MB5aaU9Bq4K4s6_wvS-4H1Xf9aw2wKuAcBtYZMbeABIRsK0xbYATgMOvG-no9gvo71rAwEhBzZ45fvznWaAaaDGSUqP9_y9VGsPV5aFEJJn5lbMjFaj5gdxvnmpeo-wPp44vYKmvA1cG8oFn76xPXMoWYPJGUYhZZNDjRWb72ZFlpZW-Ug&expires_in=0&user_id=2526835
 
 
 #Отправляет фотку в бот и спрашивает про пост
@@ -515,10 +549,10 @@ def post_vk_fotka():
 
 
 
-    ochered_0 = vk_poisk_upload_photo('photos', '0\n')
+    ochered_0 = vk_poisk_upload_photo('photos', '0\n', 'photo')
 
     if ochered_0 == False:
-        vk_poisk_upload_photo('photos', '1\n')
+        vk_poisk_upload_photo('photos', '1\n', 'photo')
 
 
 def post_vk_video(tag):
@@ -620,7 +654,10 @@ def handle_photo(message):
 
     my_file.close()
 
-    spros_za_fotku()
+
+    if chtenie_stroki('config.txt', 3) == 'ochered=0\n':
+
+        spros_za_fotku()
 
 
 #Бот скачивает видео
@@ -670,6 +707,8 @@ def handle_text(message):
 
     reply_is = message.reply_to_message
 
+    text = message.text
+
     if reply_is != None:
 
         file_id = message.reply_to_message
@@ -698,7 +737,7 @@ def handle_text(message):
 
                 bot.reply_to(message, 'Пост видео обновлен')
 
-    text = message.text
+
 
     text = str(text)
 
@@ -748,7 +787,6 @@ def post_vk_count():
     tag_today = chtenie_stroki('rasp.txt', count)
 
 
-
     if tag_today == '#end\n':
         count = 2
         tag_today = chtenie_stroki('rasp.txt', count)
@@ -757,7 +795,7 @@ def post_vk_count():
         post_vk_fotka()
         print('photo')
 
-    elif tag_today == 'ava\n':
+    elif tag_today == '#ava\n':
         print('Avatar_change')
 
     elif tag_today != '\n':
@@ -809,7 +847,6 @@ def runSchedulers():
     while True:
         schedule.run_pending()
         time.sleep(1)
-
 
 
 if __name__ == "__main__":
