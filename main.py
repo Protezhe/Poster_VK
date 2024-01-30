@@ -235,7 +235,7 @@ def pismo_v_tg_video(folder, video, txt_file):
     zapis_v_fail(txt_file, 2, id_file)
 
 
-def vk_upload_post_with_photo(folder, item, name_of_file, text_posta):
+def vk_upload_post_with_photo(folder, item, name_of_file, text_posta, tag):
 
 
     vk_start = chtenie_stroki('config.txt', 2)
@@ -248,7 +248,7 @@ def vk_upload_post_with_photo(folder, item, name_of_file, text_posta):
 
         vk_photo_upload(photo_file, text_posta)
 
-        bot.send_message('206172159', 'Пост с фото опубликован вк: ' + text_posta)
+        bot.send_message('206172159', 'Пост с фото опубликован вк: ' + text_posta  + tag)
 
 
     elif vk_start =='vk_stop\n':
@@ -348,13 +348,13 @@ def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi, tag):
                         vk_upload_ava(folder, item, name_of_file)
 
 
-                if text_full_posta != "\n" and nomer_ocheredi == poisk_nomer_ocheredi and tag != 'ava' and season_copability == True:
+                if text_full_posta != "\n" and nomer_ocheredi == poisk_nomer_ocheredi and tag != 'ava' and post_tag == tag and season_copability == True:
 
                     print(text_posta)
 
                     ochered = True
 
-                    vk_upload_post_with_photo(folder, item, name_of_file, text_posta)
+                    vk_upload_post_with_photo(folder, item, name_of_file, text_posta, tag)
 
 
 
@@ -545,14 +545,14 @@ def spros_za_video():
         sprashivaem_za_video('videos', '1\n')
 
 
-def post_vk_fotka():
+def post_vk_fotka(tag):
 
 
 
-    ochered_0 = vk_poisk_upload_photo('photos', '0\n', 'photo')
+    ochered_0 = vk_poisk_upload_photo('photos', '0\n', tag)
 
     if ochered_0 == False:
-        vk_poisk_upload_photo('photos', '1\n', 'photo')
+        vk_poisk_upload_photo('photos', '1\n', tag)
 
 
 def post_vk_video(tag):
@@ -792,10 +792,17 @@ def post_vk_count():
         tag_today = chtenie_stroki('rasp.txt', count)
 
     if tag_today == '#photo\n':
-        post_vk_fotka()
-        print('photo')
+        post_vk_fotka(tag_today)
+
+
+    elif tag_today == '#selfie\n':
+        post_vk_fotka(tag_today)
+
+    elif tag_today == 'friends\n':
+        post_vk_fotka(tag_today)
 
     elif tag_today == '#ava\n':
+        post_vk_fotka(tag_today)
         print('Avatar_change')
 
     elif tag_today != '\n':
