@@ -7,6 +7,7 @@ import schedule
 import time
 import threading
 import vk_api
+import shutil
 
 # Общие функции
 def poisk_posta_tg(folder, file_id):
@@ -71,6 +72,12 @@ def chtenie_stroki(file, stroka):
    return(text_stroki)
 
    print(text_stroki)
+
+def perepeschenie_video(file):
+
+    shutil.move(file, 'video_for_resize')
+
+
 #Конец общих функций
 
 
@@ -127,11 +134,6 @@ def statistic(folder, tag):
 
 
     return count
-
-
-
-
-
 
 #Специаьные функции
 def sprashivaem_za_fotku(folder, poisk_nomer_ocheredi):
@@ -262,20 +264,35 @@ def pismo_v_tg_video(folder, video, txt_file):
 
     video_height = props.get('height')
 
+    video_size = os.path.getsize(video)
+
+    if video_size > 52000000:
+        video_size = video_size / 1000000
+        video_size = str(video_size)
+        bot.send_message('206172159', 'Видео ' + video + "весит " + video_size + ' Mb и было перемещено в папку video_for_resize')
+
+        perepeschenie_video(video)
+
+        print(txt_file)
+
+        os.remove(txt_file)
+
+    else:
 
 
-    bot.send_message('206172159', 'Что это на видео?')
 
-    id_file = bot.send_video('206172159', video=open(video, 'rb'), width=video_width, height=video_height, timeout=10000)
+        bot.send_message('206172159', 'Что это на видео?')
+
+        id_file = bot.send_video('206172159', video=open(video, 'rb'), width=video_width, height=video_height, timeout=10000)
 
 
-    #Запись номера сообщения в файл
+        #Запись номера сообщения в файл
 
-    id_file = str(id_file.message_id)
+        id_file = str(id_file.message_id)
 
-    print(id_file)
+        print(id_file)
 
-    zapis_v_fail(txt_file, 2, id_file)
+        zapis_v_fail(txt_file, 2, id_file)
 
 
 def vk_upload_post_with_photo(folder, item, name_of_file, text_posta, tag):
