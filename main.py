@@ -8,6 +8,7 @@ import time
 import threading
 import vk_api
 import shutil
+import subprocess
 
 # Общие функции
 def poisk_posta_tg(folder, file_id):
@@ -73,7 +74,7 @@ def chtenie_stroki(file, stroka):
 
    print(text_stroki)
 
-def perepeschenie_video(file):
+def perepemeschenie_video(file):
 
     shutil.move(file, 'video_for_resize')
 
@@ -87,7 +88,6 @@ vkApiSession= vk_api.VkApi(token=vk_token)
 
 vk = vkApiSession.get_api()
 
-
 upload = vk_api.VkUpload(vkApiSession)
 
 token_tg = chtenie_stroki('tokens.txt', 1)
@@ -96,7 +96,7 @@ token_tg = token_tg.split('\n')[0]
 
 bot = telebot.TeleBot(token_tg)
 
-bot.send_message('206172159', 'Бот запущен')
+bot.send_message('206172159', 'Бот 1.3 запущен')
 
 
 def statistic(folder, tag):
@@ -227,9 +227,7 @@ def sprashivaem_za_video(folder, poisk_nomer_ocheredi):
                     pismo_v_tg_video(folder, item, name_of_file)
                     break
 
-                else:
 
-                    ochered = False
 
     return ochered
 
@@ -271,11 +269,9 @@ def pismo_v_tg_video(folder, video, txt_file):
         video_size = str(video_size)
         bot.send_message('206172159', 'Видео ' + video + "весит " + video_size + ' Mb и было перемещено в папку video_for_resize')
 
-        perepeschenie_video(video)
+        perepemeschenie_video(video)
 
-        print(txt_file)
-
-        os.remove(txt_file)
+        perepemeschenie_video(txt_file)
 
     else:
 
@@ -302,7 +298,23 @@ def vk_upload_post_with_photo(folder, item, name_of_file, text_posta, tag):
 
     if vk_start == 'vk_start\n':
 
-        zapis_v_fail(name_of_file, 1, '3')
+        nomer_ocheredi = chtenie_stroki(name_of_file, 1)
+
+        nomer_ocheredi = nomer_ocheredi.rstrip()
+
+        nomer_ocheredi = int(nomer_ocheredi)
+
+        if nomer_ocheredi == 0:
+
+            nomer_ocheredi = nomer_ocheredi + 2
+
+        else:
+
+            nomer_ocheredi = nomer_ocheredi + 1
+
+        nomer_ocheredi = str(nomer_ocheredi)
+
+        zapis_v_fail(name_of_file, 1, nomer_ocheredi)
 
         photo_file = folder + '/' + item
 
@@ -318,11 +330,28 @@ def vk_upload_post_with_photo(folder, item, name_of_file, text_posta, tag):
 
 def vk_upload_ava(folder, item, name_of_file):
 
+
     vk_start = chtenie_stroki('config.txt', 2)
 
     if vk_start == 'vk_start\n':
 
-        zapis_v_fail(name_of_file, 1, '3')
+        nomer_ocheredi = chtenie_stroki(name_of_file, 1)
+
+        nomer_ocheredi = nomer_ocheredi.rstrip()
+
+        nomer_ocheredi = int(nomer_ocheredi)
+
+        if nomer_ocheredi == 0:
+
+            nomer_ocheredi = nomer_ocheredi + 2
+
+        else:
+
+            nomer_ocheredi = nomer_ocheredi + 1
+
+        nomer_ocheredi = str(nomer_ocheredi)
+
+        zapis_v_fail(name_of_file, 1, nomer_ocheredi)
 
         photo_file = folder + '/' + item
 
@@ -341,6 +370,8 @@ def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi, tag):
     files = os.listdir(folder)
 
     ochered = False
+
+    post_tag = 'none'
 
 
     random.shuffle(files)
@@ -405,9 +436,13 @@ def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi, tag):
 
                     post_tag = post_tag.rstrip()
 
-                    if post_tag == tag:
+                    if post_tag == tag and tag == 'ava':
+
+                        ochered = True
 
                         vk_upload_ava(folder, item, name_of_file)
+
+
 
 
                 if text_full_posta != "\n" and nomer_ocheredi == poisk_nomer_ocheredi and tag != 'ava' and post_tag == tag and season_copability == True:
@@ -422,10 +457,6 @@ def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi, tag):
 
                     break
 
-                else:
-
-                    ochered = False
-
 
 
     return ochered
@@ -437,7 +468,23 @@ def vk_upload_post_with_video(folder, item, name_of_file, text_posta):
 
     if vk_start == 'vk_start\n':
 
-        zapis_v_fail(name_of_file, 1, '3')
+        nomer_ocheredi = chtenie_stroki(name_of_file, 1)
+
+        nomer_ocheredi = nomer_ocheredi.rstrip()
+
+        nomer_ocheredi = int(nomer_ocheredi)
+
+        if nomer_ocheredi == 0:
+
+            nomer_ocheredi = nomer_ocheredi + 2
+
+        else:
+
+            nomer_ocheredi = nomer_ocheredi + 1
+
+        nomer_ocheredi = str(nomer_ocheredi)
+
+        zapis_v_fail(name_of_file, 1, nomer_ocheredi)
 
         name_video = text_posta[0:30]
 
@@ -448,6 +495,7 @@ def vk_upload_post_with_video(folder, item, name_of_file, text_posta):
         bot.send_message('206172159','Пост с видео опубликован вк: ' + text_posta)
 
     elif vk_start =='vk_stop\n':
+
         bot.send_message('206172159', 'Пост с видео не был опубликован вк: ' + text_posta)
 
 
@@ -534,10 +582,6 @@ def vk_poisk_upload_video(folder, poisk_nomer_ocheredi, tag):
 
                     break
 
-                else:
-
-                    ochered = False
-
 
 
     return ochered
@@ -585,7 +629,7 @@ def vk_avatar_upload(file):
 
     photo_info = upload.photo_profile(file)
 
-    print(photo_info)
+
 
 
 #https://oauth.vk.com/authorize?client_id=51844510&redirect_uri=https://api.vk.com/blank.html&scope=offline,wall&response_type=token
@@ -593,36 +637,60 @@ def vk_avatar_upload(file):
 
 
 #Отправляет фотку в бот и спрашивает про пост
-def spros_za_fotku() -> object:
-    ochered_0 = sprashivaem_za_fotku('photos', '0\n')
+def spros_za_fotku():
 
-    if ochered_0 == False:
-        sprashivaem_za_fotku('photos', '1\n')
+    for count_ochered in range (1, 10):
+
+        str_count_ochered = str(count_ochered) + '\n'
+
+        ochered = sprashivaem_za_fotku('photos', str_count_ochered)
+
+        if ochered == True:
+
+            break
+
 
 #Отправляет видео в бот и спрашивает про пост
 def spros_za_video():
-    ochered_0 = sprashivaem_za_video('videos', '0\n')
 
-    if ochered_0 == False:
+    for count_ochered in range (1, 10):
 
-        sprashivaem_za_video('videos', '1\n')
+        str_count_ochered = str(count_ochered) + '\n'
+
+        ochered = sprashivaem_za_video('videos', str_count_ochered)
+
+        if ochered == True:
+
+            break
+
 
 
 def post_vk_fotka(tag):
 
 
+    for count_ochered in range (1, 10):
 
-    ochered_0 = vk_poisk_upload_photo('photos', '0\n', tag)
+        str_count_ochered = str(count_ochered) + '\n'
 
-    if ochered_0 == False:
-        vk_poisk_upload_photo('photos', '1\n', tag)
+        ochered = vk_poisk_upload_photo('photos', str_count_ochered, tag)
+
+        if ochered == True:
+
+            break
+
 
 
 def post_vk_video(tag):
-    ochered_0 = vk_poisk_upload_video('videos', '0\n', tag)
 
-    if ochered_0 == False:
-        vk_poisk_upload_video('videos', '1\n', tag)
+    for count_ochered in range (1, 10):
+
+        str_count_ochered = str(count_ochered) + '\n'
+
+        ochered = vk_poisk_upload_video('videos', str_count_ochered, tag)
+
+        if ochered == True:
+
+            break
 
 
 @bot.message_handler(commands=["get_photo"])
@@ -844,10 +912,6 @@ def handle_text(message):
         bot.send_message('206172159', 'Ништяк!')
 
 
-    else:
-
-        bot.send_message('206172159', 'Чего?')
-
 
 @bot.message_handler(content_types=['document'])
 def addfile(message):
@@ -873,6 +937,10 @@ def addfile(message):
             zapis_v_fail('config.txt', 6, 'update_no')
 
             bot.send_message('206172159', 'Файл ' + file_name + ' сохранен в корневую папку')
+
+            time.sleep(5)
+
+            subprocess.check_call('reboot')
 
 
 #расписание в конфиге
@@ -914,7 +982,7 @@ def post_vk_count():
     zapis_v_fail('rasp.txt', 1, count)
 
 
-# Тут надо генерить новое время на день
+# Тут надо генерить новое время на день в UTC
 def new_time():
 
     publish_minute_1 = list(range(0, 5))
@@ -923,20 +991,20 @@ def new_time():
     random.shuffle(publish_minute_1)
     random.shuffle(publish_minute_2)
 
-    publish_time = '06:' + str(publish_minute_1[0]) + str(publish_minute_2[0])
+    publish_time = '08:' + str(publish_minute_1[0]) + str(publish_minute_2[0])
 
 
     schedule.every().day.at(publish_time).do(post_vk_count)
 
-    schedule.every().day.at('09:00').do(spros_za_fotku)
-    schedule.every().day.at('20:00').do(spros_za_video)
+    schedule.every().day.at('12:00').do(spros_za_fotku)
+    schedule.every().day.at('23:00').do(spros_za_video)
 
 
 
 
     time.sleep(80)
 
-    schedule.every().day.at('05:58').do(new_time)
+    schedule.every().day.at('07:58').do(new_time)
 
     if chtenie_stroki('config.txt', 6) == 'update_yes\n':
         zapis_v_fail('config.txt', 6, 'update_no')
