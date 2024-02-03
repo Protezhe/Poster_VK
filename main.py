@@ -12,8 +12,6 @@ import subprocess
 
 version = '1.4 - audio'
 
-audio_dict = {'Девочка гриб': 'audio-2001462451_88462451', 'Неприятная песня' :'audio-2001368698_78368698',
-              'Голые землекопы - День рождения':'audio2526835_456239577'}
 
 # Общие функции
 def poisk_posta_tg(folder, file_id):
@@ -614,6 +612,13 @@ def vk_photo_upload(file, text_posta):
 
     #Добавение аудио
 
+    with open('audio.txt') as atach_file:
+
+        audio_dict = atach_file.read()
+
+        audio_dict = ast.literal_eval(audio_dict)
+
+
     key = audio_dict.keys()
 
     audio_atach = ''
@@ -654,6 +659,13 @@ def vk_video_upload(file, name_video, text_posta):
     atach = 'video' + owner_id + '_' + video_id
 
     #Добавение аудио
+
+    with open('audio.txt') as atach_file:
+
+        audio_dict = atach_file.read()
+
+        audio_dict = ast.literal_eval(audio_dict)
+
 
     key = audio_dict.keys()
 

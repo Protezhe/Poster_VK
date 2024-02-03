@@ -1,6 +1,6 @@
 
-vk_stop
+vk_start
 ochered=1
 
 winter
-update_no
+update_yes
