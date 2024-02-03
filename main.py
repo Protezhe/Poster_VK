@@ -10,6 +10,11 @@ import vk_api
 import shutil
 import subprocess
 
+version = '1.4 - audio'
+
+audio_dict = {'Девочка гриб': 'audio-2001462451_88462451', 'Неприятная песня' :'audio-2001368698_78368698',
+              'Голые землекопы - День рождения':'audio2526835_456239577'}
+
 # Общие функции
 def poisk_posta_tg(folder, file_id):
 
@@ -96,7 +101,7 @@ token_tg = token_tg.split('\n')[0]
 
 bot = telebot.TeleBot(token_tg)
 
-bot.send_message('206172159', 'Бот 1.3 запущен')
+bot.send_message('206172159', 'Бот ' + version + ' запущен')
 
 
 def statistic(folder, tag):
@@ -238,7 +243,7 @@ def pismo_v_tg_photo(folder, photo, txt_file):
     photo = folder + '/' + photo
 
 
-    bot.send_message('206172159', 'Что это на фото?')
+    bot.send_message('206172159', 'Что это на фото? ' + photo)
     id_file = bot.send_photo('206172159', photo=open(photo, 'rb'))
 
     #Запись номера сообщения в файл
@@ -355,7 +360,7 @@ def vk_upload_ava(folder, item, name_of_file):
 
         photo_file = folder + '/' + item
 
-        vk_avatar_upload(photo_file)
+        upload.photo_profile(photo_file)
 
         bot.send_message('206172159', 'Аватар был обновлен')
 
@@ -432,9 +437,10 @@ def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi, tag):
 
                     text_posta = text_posta.split('#') [0]
 
+                    tag = tag.rstrip()
 
+                    post_tag = '#' + post_tag.rstrip()
 
-                    post_tag = post_tag.rstrip()
 
                     if post_tag == tag and tag == 'ava':
 
@@ -570,7 +576,11 @@ def vk_poisk_upload_video(folder, poisk_nomer_ocheredi, tag):
                 else:
                     post_tag = 'none'
 
-                post_tag = post_tag.rstrip()
+                tag = tag.rstrip()
+
+                post_tag = '#' + post_tag.rstrip()
+
+
 
                 if text_full_posta != "\n" and nomer_ocheredi == poisk_nomer_ocheredi and post_tag == tag and season_copability == True:
 
@@ -602,7 +612,28 @@ def vk_photo_upload(file, text_posta):
 
     atach = 'photo'+ owner_id +'_' + photo_id
 
-    vk.wall.post(message=text_posta, attachments=atach)
+    #Добавение аудио
+
+    key = audio_dict.keys()
+
+    audio_atach = ''
+
+    for k in audio_dict.keys():
+
+        tr = text.find(k)
+
+        if tr != -1:
+            audio_atach = audio_dict.get(k)
+
+    if audio_atach != '':
+
+        print(audio_atach)
+
+        vk.wall.post(message=text_posta, attachments=atach + ',' + audio_atach)
+
+    else:
+
+        vk.wall.post(message=text_posta, attachments=atach)
 
 
 def vk_video_upload(file, name_video, text_posta):
@@ -622,14 +653,28 @@ def vk_video_upload(file, name_video, text_posta):
 
     atach = 'video' + owner_id + '_' + video_id
 
-    vk.wall.post(message=text_posta, attachments=atach)
+    #Добавение аудио
 
+    key = audio_dict.keys()
 
-def vk_avatar_upload(file):
+    audio_atach = ''
 
-    photo_info = upload.photo_profile(file)
+    for k in audio_dict.keys():
 
+        tr = text.find(k)
 
+        if tr != -1:
+            audio_atach = audio_dict.get(k)
+
+    if audio_atach != '':
+
+        print(audio_atach)
+
+        vk.wall.post(message=text_posta, attachments=atach + ',' + audio_atach)
+
+    else:
+
+        vk.wall.post(message=text_posta, attachments=atach)
 
 
 #https://oauth.vk.com/authorize?client_id=51844510&redirect_uri=https://api.vk.com/blank.html&scope=offline,wall&response_type=token
@@ -682,7 +727,7 @@ def post_vk_fotka(tag):
 
 def post_vk_video(tag):
 
-    for count_ochered in range (1, 10):
+    for count_ochered in range (1, 1000):
 
         str_count_ochered = str(count_ochered) + '\n'
 
@@ -739,7 +784,7 @@ def stat(m, res=False):
 
     video_music = statistic('videos', 'music')
 
-    summa = 'Photo_selfei = ' + str(photo_selfie) + '\n' + 'photo_photo = ' + str(
+    summa = 'Photo_selfie = ' + str(photo_selfie) + '\n' + 'photo_photo = ' + str(
         photo_photo) + '\n' + 'photo_friends = ' + str(photo_friends) + '\n' + 'photo_ava = ' + str(
         photo_ava) + '\n' + 'video_life = ' + str(video_life) + '\n' + 'video_sport = ' + str(
         video_sport) + '\n' + 'video_drama = ' + str(video_drama) + '\n' + 'video_izobreteniya = ' + str(
@@ -864,8 +909,6 @@ def handle_photo(message):
 
     my_file.close()
 
-    spros_za_video()
-
 
 #Бот обновляет пост для файла
 @bot.message_handler(content_types=["text"])
@@ -955,7 +998,7 @@ def post_vk_count():
 
 
     if tag_today == '#end\n':
-        count = 2
+        count = 1
         tag_today = chtenie_stroki('rasp.txt', count)
 
     if tag_today == '#photo\n':
@@ -965,7 +1008,7 @@ def post_vk_count():
     elif tag_today == '#selfie\n':
         post_vk_fotka(tag_today)
 
-    elif tag_today == 'friends\n':
+    elif tag_today == '#friends\n':
         post_vk_fotka(tag_today)
 
     elif tag_today == '#ava\n':
@@ -981,6 +1024,8 @@ def post_vk_count():
 
     zapis_v_fail('rasp.txt', 1, count)
 
+post_vk_count()
+
 
 # Тут надо генерить новое время на день в UTC
 def new_time():
@@ -991,7 +1036,9 @@ def new_time():
     random.shuffle(publish_minute_1)
     random.shuffle(publish_minute_2)
 
-    publish_time = '08:' + str(publish_minute_1[0]) + str(publish_minute_2[0])
+    publish_time = '09:' + str(publish_minute_1[0]) + str(publish_minute_2[0])
+
+    print(publish_time)
 
 
     schedule.every().day.at(publish_time).do(post_vk_count)
@@ -1004,10 +1051,11 @@ def new_time():
 
     time.sleep(80)
 
-    schedule.every().day.at('07:58').do(new_time)
+    schedule.every().day.at('08:58').do(new_time)
 
     if chtenie_stroki('config.txt', 6) == 'update_yes\n':
         zapis_v_fail('config.txt', 6, 'update_no')
+
 
 
 #ТГ бот
@@ -1018,7 +1066,7 @@ def runBot():
 def runSchedulers():
 
 
-    schedule.every().day.at('13:21').do(new_time)
+    schedule.every().day.at('08:58').do(new_time)
 
 
 
