@@ -446,6 +446,8 @@ def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi, tag):
 
                         vk_upload_ava(folder, item, name_of_file)
 
+                        break
+
 
 
 
