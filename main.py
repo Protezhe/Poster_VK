@@ -9,8 +9,11 @@ import threading
 import vk_api
 import shutil
 import subprocess
+import ast
 
-version = '1.4 - audio'
+version = '2.2'
+
+tg_chat = '206172159' 
 
 
 # Общие функции
@@ -81,6 +84,10 @@ def perepemeschenie_video(file):
 
     shutil.move(file, 'video_for_resize')
 
+def perepemeschenie_del(file):
+
+    shutil.move(file, 'delted')
+
 
 #Конец общих функций
 
@@ -99,7 +106,7 @@ token_tg = token_tg.split('\n')[0]
 
 bot = telebot.TeleBot(token_tg)
 
-bot.send_message('206172159', 'Бот ' + version + ' запущен')
+bot.send_message(tg_chat, 'Бот ' + version + ' запущен')
 
 
 def statistic(folder, tag):
@@ -241,8 +248,8 @@ def pismo_v_tg_photo(folder, photo, txt_file):
     photo = folder + '/' + photo
 
 
-    bot.send_message('206172159', 'Что это на фото? ' + photo)
-    id_file = bot.send_photo('206172159', photo=open(photo, 'rb'))
+    bot.send_message('tg_chat', 'Что это на фото? ' + photo)
+    id_file = bot.send_photo(tg_chat, photo=open(photo, 'rb'))
 
     #Запись номера сообщения в файл
 
@@ -270,7 +277,7 @@ def pismo_v_tg_video(folder, video, txt_file):
     if video_size > 52000000:
         video_size = video_size / 1000000
         video_size = str(video_size)
-        bot.send_message('206172159', 'Видео ' + video + "весит " + video_size + ' Mb и было перемещено в папку video_for_resize')
+        bot.send_message(tg_chat, 'Видео ' + video + "весит " + video_size + ' Mb и было перемещено в папку video_for_resize')
 
         perepemeschenie_video(video)
 
@@ -280,9 +287,9 @@ def pismo_v_tg_video(folder, video, txt_file):
 
 
 
-        bot.send_message('206172159', 'Что это на видео?')
+        bot.send_message(tg_chat, 'Что это на видео?')
 
-        id_file = bot.send_video('206172159', video=open(video, 'rb'), width=video_width, height=video_height, timeout=10000)
+        id_file = bot.send_video(tg_chat, video=open(video, 'rb'), width=video_width, height=video_height, timeout=10000)
 
 
         #Запись номера сообщения в файл
@@ -323,12 +330,12 @@ def vk_upload_post_with_photo(folder, item, name_of_file, text_posta, tag):
 
         vk_photo_upload(photo_file, text_posta)
 
-        bot.send_message('206172159', 'Пост с фото опубликован вк: ' + text_posta  + tag)
+        bot.send_message(tg_chat, 'Пост с фото опубликован вк: ' + text_posta  + tag)
 
 
     elif vk_start =='vk_stop\n':
 
-        bot.send_message('206172159', 'Пост с фото не был опубликован вк: ' + text_posta)
+        bot.send_message(tg_chat, 'Пост с фото не был опубликован вк: ' + text_posta)
 
 
 def vk_upload_ava(folder, item, name_of_file):
@@ -360,12 +367,12 @@ def vk_upload_ava(folder, item, name_of_file):
 
         upload.photo_profile(photo_file)
 
-        bot.send_message('206172159', 'Аватар был обновлен')
+        bot.send_message(tg_chat, 'Аватар был обновлен')
 
 
     elif vk_start =='vk_stop\n':
 
-        bot.send_message('206172159', 'Аватар не был обновлен')
+        bot.send_message(tg_chat, 'Аватар не был обновлен')
 
 
 def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi, tag):
@@ -439,8 +446,7 @@ def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi, tag):
 
                     post_tag = '#' + post_tag.rstrip()
 
-
-                    if post_tag == tag and tag == 'ava':
+                    if post_tag == tag and tag == '#ava':
 
                         ochered = True
 
@@ -448,10 +454,13 @@ def vk_poisk_upload_photo(folder, poisk_nomer_ocheredi, tag):
 
                         break
 
+                if post_tag == '#del':
+                     perepemeschenie_del(folder + '/' + item)
+                     perepemeschenie_del(name_of_file)
 
 
 
-                if text_full_posta != "\n" and nomer_ocheredi == poisk_nomer_ocheredi and tag != 'ava' and post_tag == tag and season_copability == True:
+                if text_full_posta != "\n" and nomer_ocheredi == poisk_nomer_ocheredi and tag != '#ava' and post_tag == tag and season_copability == True:
 
                     print(text_posta)
 
@@ -498,11 +507,11 @@ def vk_upload_post_with_video(folder, item, name_of_file, text_posta):
 
         vk_video_upload(videofile, name_video, text_posta)
 
-        bot.send_message('206172159','Пост с видео опубликован вк: ' + text_posta)
+        bot.send_message(tg_chat,'Пост с видео опубликован вк: ' + text_posta)
 
     elif vk_start =='vk_stop\n':
 
-        bot.send_message('206172159', 'Пост с видео не был опубликован вк: ' + text_posta)
+        bot.send_message(tg_chat, 'Пост с видео не был опубликован вк: ' + text_posta)
 
 
 def vk_poisk_upload_video(folder, poisk_nomer_ocheredi, tag):
@@ -614,20 +623,19 @@ def vk_photo_upload(file, text_posta):
 
     #Добавение аудио
 
-    with open('audio.txt') as atach_file:
+    with open('audio.txt', 'r', encoding='utf-8') as atach_file:
 
         audio_dict = atach_file.read()
 
         audio_dict = ast.literal_eval(audio_dict)
 
-
-    key = audio_dict.keys()
+    # key = audio_dict.keys()
 
     audio_atach = ''
 
     for k in audio_dict.keys():
 
-        tr = text.find(k)
+        tr = text_posta.find(k)
 
         if tr != -1:
             audio_atach = audio_dict.get(k)
@@ -646,6 +654,8 @@ def vk_photo_upload(file, text_posta):
 def vk_video_upload(file, name_video, text_posta):
 
     video_info = upload.video(file, name=name_video)
+    
+    time.sleep(10)
 
     print(video_info)
 
@@ -662,20 +672,19 @@ def vk_video_upload(file, name_video, text_posta):
 
     #Добавение аудио
 
-    with open('audio.txt') as atach_file:
+    with open('audio.txt', 'r', encoding='utf-8') as atach_file:
 
         audio_dict = atach_file.read()
 
         audio_dict = ast.literal_eval(audio_dict)
 
-
-    key = audio_dict.keys()
+    # key = audio_dict.keys()
 
     audio_atach = ''
 
     for k in audio_dict.keys():
 
-        tr = text.find(k)
+        tr = text_posta.find(k)
 
         if tr != -1:
             audio_atach = audio_dict.get(k)
@@ -691,14 +700,14 @@ def vk_video_upload(file, name_video, text_posta):
         vk.wall.post(message=text_posta, attachments=atach)
 
 
-#https://oauth.vk.com/authorize?client_id=51844510&redirect_uri=https://api.vk.com/blank.html&scope=offline,wall&response_type=token
-#https://api.vk.com/blank.html#access_token=vk1.a.WsVxuK1mCPt0e9ckGuyCJTDAxTZWxv1Y3Xk7MB5aaU9Bq4K4s6_wvS-4H1Xf9aw2wKuAcBtYZMbeABIRsK0xbYATgMOvG-no9gvo71rAwEhBzZ45fvznWaAaaDGSUqP9_y9VGsPV5aFEJJn5lbMjFaj5gdxvnmpeo-wPp44vYKmvA1cG8oFn76xPXMoWYPJGUYhZZNDjRWb72ZFlpZW-Ug&expires_in=0&user_id=2526835
+#https://oauth.vk.com/authorize?client_id=51844510&redirect_uri=https://api.vk.com/blank.html&scope=offline,photos,video,audio,wall,groups&response_type=token
+#vk1.a.rDiPlVOCK8eFrPPitXNtuxnDIlFeiJWMONqEX03ogQ2RnTVyuwVa4nwxZyvMsFsitEZBO_nQXB-lIf4IJJ9-ksKzTdY_k8LBq9zcSkjKNUteE9pOqiMxi7IF5X-7xoYR2ZxtWHNhnmfBl8SXHYxovtzQAXoyNHD86sjixs9EiWL-TXVks0_6s1BXVYtVAP86QGTB0_k1YU7O0hligpwZVg
 
 
 #Отправляет фотку в бот и спрашивает про пост
 def spros_za_fotku():
 
-    for count_ochered in range (1, 10):
+    for count_ochered in range (0, 10):
 
         str_count_ochered = str(count_ochered) + '\n'
 
@@ -712,7 +721,7 @@ def spros_za_fotku():
 #Отправляет видео в бот и спрашивает про пост
 def spros_za_video():
 
-    for count_ochered in range (1, 10):
+    for count_ochered in range (0, 10):
 
         str_count_ochered = str(count_ochered) + '\n'
 
@@ -727,7 +736,7 @@ def spros_za_video():
 def post_vk_fotka(tag):
 
 
-    for count_ochered in range (1, 10):
+    for count_ochered in range (0, 100):
 
         str_count_ochered = str(count_ochered) + '\n'
 
@@ -741,7 +750,7 @@ def post_vk_fotka(tag):
 
 def post_vk_video(tag):
 
-    for count_ochered in range (1, 1000):
+    for count_ochered in range (0, 100):
 
         str_count_ochered = str(count_ochered) + '\n'
 
@@ -750,6 +759,11 @@ def post_vk_video(tag):
         if ochered == True:
 
             break
+
+
+@bot.message_handler(commands=["publish"])
+def publish(m, res=False):
+    post_vk_count()
 
 
 @bot.message_handler(commands=["get_photo"])
@@ -762,18 +776,20 @@ def get_video(m, res=False):
 
 @bot.message_handler(commands=["ochered_1"])
 def ochered_1(m, res=False):
-    bot.send_message('206172159', 'Установлена очередь = 1')
+    bot.send_message(tg_chat, 'Установлена очередь = 1')
     zapis_v_fail('config.txt', 3, 'ochered=1')
 
 @bot.message_handler(commands=["ochered_0"])
 def ochered_0(m, res=False):
-    bot.send_message('206172159', 'Установлена очередь = 0')
+    bot.send_message(tg_chat, 'Установлена очередь = 0')
     zapis_v_fail('config.txt', 3, 'ochered=0')
 
 @bot.message_handler(commands=["raspisanie"])
 def raspisanie(m, res=False):
     print('Rasp_send')
-    bot.send_document('206172159', document=open('rasp.txt', 'rb'))
+    bot.send_document(tg_chat, document=open('rasp.txt', 'rb'))
+    bot.send_document(tg_chat, document=open('audio.txt', 'rb'))
+    bot.send_document(tg_chat, document=open('main.py', 'rb'))
 
 
 
@@ -798,44 +814,46 @@ def stat(m, res=False):
 
     video_music = statistic('videos', 'music')
 
+    video_puteshestviya = statistic('videos', 'puteshestviya')
+
     summa = 'Photo_selfie = ' + str(photo_selfie) + '\n' + 'photo_photo = ' + str(
         photo_photo) + '\n' + 'photo_friends = ' + str(photo_friends) + '\n' + 'photo_ava = ' + str(
         photo_ava) + '\n' + 'video_life = ' + str(video_life) + '\n' + 'video_sport = ' + str(
         video_sport) + '\n' + 'video_drama = ' + str(video_drama) + '\n' + 'video_izobreteniya = ' + str(
-        video_izobreteniya) + '\n' + 'video_music = ' + str(video_music)
+        video_izobreteniya) + '\n' + 'video_music = ' + str(video_music) + '\n' + 'puteshestviya = ' + str(video_puteshestviya)
 
 
     print(summa)
 
-    bot.send_message('206172159', summa)
+    bot.send_message(tg_chat, summa)
 
 
 @bot.message_handler(commands=["vk_start"])
 def raspisanie(m, res=False):
-    bot.send_message('206172159', 'Публикации вк запущены')
+    bot.send_message(tg_chat, 'Публикации вк запущены')
     zapis_v_fail('config.txt', 2, 'vk_start')
 
 
 @bot.message_handler(commands=["vk_stop"])
 def vk_stop(m, res=False):
-    bot.send_message('206172159', 'Публикации вк остановлены')
+    bot.send_message(tg_chat, 'Публикации вк остановлены')
     zapis_v_fail('config.txt', 2, 'vk_stop')
 
 @bot.message_handler(commands=["summer"])
 def summer(m, res=False):
-    bot.send_message('206172159', 'Сейчас лето')
+    bot.send_message(tg_chat, 'Сейчас лето')
     zapis_v_fail('config.txt', 5, 'summer')
 
 @bot.message_handler(commands=["winter"])
 def winter(m, res=False):
-    bot.send_message('206172159', 'Сейчас зима')
+    bot.send_message(tg_chat, 'Сейчас зима')
     zapis_v_fail('config.txt', 5, 'winter')
 
 @bot.message_handler(commands=["update"])
 def update(m, res=False):
 
     zapis_v_fail('config.txt', 6, 'update_yes')
-    bot.send_message('206172159', 'Внимание!!! Обновление активно, пришлите системный файл')
+    bot.send_message(tg_chat, 'Внимание!!! Обновление активно, пришлите системный файл')
 
 
 #Бот скачивает фотку
@@ -966,7 +984,7 @@ def handle_text(message):
 
     if text == 'Как дела?' or text == 'как дела?' or text == 'Как дела' or text == 'как дела':
 
-        bot.send_message('206172159', 'Ништяк!')
+        bot.send_message(tg_chat, 'Ништяк!')
 
 
 
@@ -979,7 +997,17 @@ def addfile(message):
         with open('rasp.txt', 'wb') as new_file:
             new_file.write(downloaded_file)
 
-        bot.send_message('206172159', 'Расписание обновлено')
+        bot.send_message(tg_chat, 'Расписание обновлено')
+
+    elif file_name == 'audio.txt':
+        file_info = bot.get_file(message.document.file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+        with open('audio.txt', 'wb') as new_file:
+            new_file.write(downloaded_file)
+
+        bot.send_message(tg_chat, 'Список аудио обновлен')
+
+
 
     else:
         update_status = chtenie_stroki('config.txt', 6)
@@ -993,7 +1021,7 @@ def addfile(message):
 
             zapis_v_fail('config.txt', 6, 'update_no')
 
-            bot.send_message('206172159', 'Файл ' + file_name + ' сохранен в корневую папку')
+            bot.send_message(tg_chat, 'Файл ' + file_name + ' сохранен в корневую папку')
 
             time.sleep(5)
 
@@ -1012,7 +1040,7 @@ def post_vk_count():
 
 
     if tag_today == '#end\n':
-        count = 1
+        count = 2
         tag_today = chtenie_stroki('rasp.txt', count)
 
     if tag_today == '#photo\n':
@@ -1038,11 +1066,13 @@ def post_vk_count():
 
     zapis_v_fail('rasp.txt', 1, count)
 
-post_vk_count()
+
 
 
 # Тут надо генерить новое время на день в UTC
 def new_time():
+
+    schedule.clear()
 
     publish_minute_1 = list(range(0, 5))
     publish_minute_2 = list(range(0, 9))
@@ -1050,26 +1080,30 @@ def new_time():
     random.shuffle(publish_minute_1)
     random.shuffle(publish_minute_2)
 
-    publish_time = '09:' + str(publish_minute_1[0]) + str(publish_minute_2[0])
+    publish_time = '06:' + str(publish_minute_1[0]) + str(publish_minute_2[0])
 
     print(publish_time)
 
-
     schedule.every().day.at(publish_time).do(post_vk_count)
 
-    schedule.every().day.at('12:00').do(spros_za_fotku)
-    schedule.every().day.at('23:00').do(spros_za_video)
+    schedule.every().day.at('10:00').do(spros_za_fotku)
+    schedule.every().day.at('20:00').do(spros_za_video)
 
 
 
 
     time.sleep(80)
 
-    schedule.every().day.at('08:58').do(new_time)
+    schedule.every().day.at('05:58').do(new_time)
+
+    all_jobs = schedule.get_jobs()
+
+    print(all_jobs)
+
+
 
     if chtenie_stroki('config.txt', 6) == 'update_yes\n':
         zapis_v_fail('config.txt', 6, 'update_no')
-
 
 
 #ТГ бот
@@ -1079,8 +1113,32 @@ def runBot():
 #Планировщик
 def runSchedulers():
 
+    publish_minute_1 = list(range(0, 5))
+    publish_minute_2 = list(range(0, 9))
 
-    schedule.every().day.at('08:58').do(new_time)
+    random.shuffle(publish_minute_1)
+    random.shuffle(publish_minute_2)
+
+    publish_time = '06:' + str(publish_minute_1[0]) + str(publish_minute_2[0])
+
+    print(publish_time)
+
+    schedule.every().day.at(publish_time).do(post_vk_count)
+
+    schedule.every().day.at('10:00').do(spros_za_fotku)
+    schedule.every().day.at('20:00').do(spros_za_video)
+
+
+    schedule.every().day.at('05:58').do(new_time)
+
+    all_jobs = schedule.get_jobs()
+
+    print(all_jobs)
+
+
+
+    #Тест - публикация каждую минуту
+    #schedule.every(1).minutes.do(post_vk_count)
 
 
 
